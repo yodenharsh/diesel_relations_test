@@ -1,0 +1,8 @@
+-- Your SQL goes here
+CREATE TABLE pages (
+id INT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
+page_number INT NOT NULL,
+content TEXT NOT NULL,
+book_id INT UNSIGNED NOT NULL,
+FOREIGN KEY (book_id) REFERENCES books(id)
+)
