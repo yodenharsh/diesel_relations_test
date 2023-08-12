@@ -7,8 +7,8 @@ use std::error::Error;
 pub mod model;
 pub mod schema;
 
-use crate::model::{Book, Page};
-use crate::schema::{books, pages};
+use crate::model::*;
+use crate::schema::*;
 
 fn establish_connection() -> MysqlConnection {
     dotenv().ok();
@@ -41,6 +41,24 @@ fn new_page(
         ))
         .execute(conn)?;
     Ok(number_of_rows_affected)
+}
+
+fn joins(conn: &mut MysqlConnection) -> Result<(), Box<dyn Error>> {
+    let page_with_book = pages::table
+        .inner_join(books::table)
+        .filter(books::title.eq("Momo"))
+        .select((Page::as_select(), Book::as_select()))
+        .load::<(Page, Book)>(conn)?;
+
+    println!("Page-Book pairs: {page_with_book:?}");
+
+    let book_without_pages = books::table
+        .left_join(pages::table)
+        .select((Book::as_select(), Option::<Page>::as_select()))
+        .load::<(Book, Option<Page>)>(conn)?;
+
+    println!("Book-Page pairs (including empty books): {book_without_pages:?}");
+    Ok(())
 }
 
 fn main() {
